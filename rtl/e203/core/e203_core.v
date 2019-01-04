@@ -1,5 +1,5 @@
  /*                                                                      
- Copyright 2018 Nuclei System Technology, Inc.                
+ Copyright 2017 Silicon Integrated Microelectronics, Inc.                
                                                                          
  Licensed under the Apache License, Version 2.0 (the "License");         
  you may not use this file except in compliance with the License.        
@@ -16,6 +16,13 @@
                                                                          
                                                                          
                                                                          
+//=====================================================================
+//--        _______   ___
+//--       (   ____/ /__/
+//--        \ \     __
+//--     ____\ \   / /
+//--    /_______\ /_/   MICROELECTRONICS
+//--
 //=====================================================================
 //
 // Designer   : Bob Hu
@@ -301,8 +308,8 @@ module e203_core(
 
 
 
-  wire ifu_o_valid;
-  wire ifu_o_ready;
+  wire ifu_o_valid; //
+  wire ifu_o_ready; //
   wire [`E203_INSTR_SIZE-1:0] ifu_o_ir;
   wire [`E203_PC_SIZE-1:0] ifu_o_pc;
   wire ifu_o_pc_vld; 

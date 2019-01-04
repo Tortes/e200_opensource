@@ -1,5 +1,5 @@
  /*                                                                      
- Copyright 2018 Nuclei System Technology, Inc.                
+ Copyright 2017 Silicon Integrated Microelectronics, Inc.                
                                                                          
  Licensed under the Apache License, Version 2.0 (the "License");         
  you may not use this file except in compliance with the License.        
@@ -16,6 +16,13 @@
                                                                          
                                                                          
                                                                          
+//=====================================================================
+//--        _______   ___
+//--       (   ____/ /__/
+//--        \ \     __
+//--     ____\ \   / /
+//--    /_______\ /_/   MICROELECTRONICS
+//--
 //=====================================================================
 // Designer   : Bob Hu
 //
@@ -47,8 +54,8 @@ module e203_ifu_minidec(
   output dec_divu  ,
   output dec_remu  ,
 
-  output dec_rv32,
-  output dec_bjp,
+  output dec_rv32,  //16位or32位
+  output dec_bjp,   //是否是跳转指令
   output dec_jal,
   output dec_jalr,
   output dec_bxx,

@@ -11,7 +11,9 @@ which has both performance and areas benchmark better than ARM Cortex-M0+ core, 
 
 To boost the RISC-V popularity and to speed up the IoT development in China,
 we are very proud to make it open-source. It is the first open-source processor core from
-China mainland with state-of-art CPU design skills to support RISC-V instruction set.
+China mainland with industry level quality and state-of-art CPU design skills to support RISC-V instruction set.
+
+Our ambition is to make "Hummingbird E200" become next 8051 in China, please go with us to make it happen.
 
 
 Usages and Applications
@@ -28,46 +30,20 @@ Detailed Introduction
 We have provided very detailed introduction and quick start-up documents to help you ramping it up. 
 
 The detailed introduction and the quick start documentation can be seen 
-from https://github.com/SI-RISCV/e200_opensource/tree/master/doc directory.
+from `e200_opensource/doc` directory.
 
 By following the guidences from the doc, you can very easily start to use Hummingbird E200 processor core and demo SoC.
 
 Meanwhile, the Hummingbird E200 Core was deeply introduced in the published Book (蜂鸟E200处理器核在如下出版中文书籍中进行深入浅出的分析讲解):
 
     《手把手教你设计CPU：RISC-V处理器》（已经上市，请在京东、淘宝、当当上搜索 RISC-V关键字）
-
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/bookpic.jpg" width="480">
         
+![RISC-V中文书](bookpic.jpg)
 
 What are you waiting for? Try it out now!
 
-Dedicated FPGA-Board and JTAG-Debugger 
------------------------------
-In order to easy user to study RISC-V in a quick and easy way, we have made a dedicated FPGA-Board and JTAG-Debugger.  Diagram as below:
-
-#### 蜂鸟E203专用的FPGA开发板
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/2-1.jpg" width="480">
-
-#### 蜂鸟E203专用的JTAG调试器
-<img src="https://github.com/SI-RISCV/e200_opensource/blob/master/boards/pics/3-1.jpg" width="400">
-
-The detailed introduction and the relevant documentation can be seen from https://github.com/SI-RISCV/e200_opensource/tree/master/boards directory.
-
-
 Release History
 -----------------------------
-#### Note at First:
-    -- Many people asked if this core can be commercially used, the answer as below:
-       * According to the Apache 2.0 license, this open-sourced core can be used in commercial way.
-       * But the feature is not full (e.g., the debug functionalities is not full, which 
-           cannot add breakpoint into the read-only region, .e.g, ROM/Flash)
-       * The main purpose of this open-sourced core is to be used by students/university/research/
-           and entry-level-beginners, hence, the commercial quality (bug-free) and
-           service of this core is not not not warranted!!! 
-
-#### Sep 27, 2018
-    -- The 4th official release with some minor fixing.
-
 #### May 15, 2018
 
     -- The 3rd official release, please clone this version if you want to use it

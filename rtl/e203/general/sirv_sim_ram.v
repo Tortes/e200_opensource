@@ -1,5 +1,5 @@
  /*                                                                      
- Copyright 2018 Nuclei System Technology, Inc.                
+ Copyright 2017 Silicon Integrated Microelectronics, Inc.                
                                                                          
  Licensed under the Apache License, Version 2.0 (the "License");         
  you may not use this file except in compliance with the License.        
@@ -16,6 +16,13 @@
                                                                          
                                                                          
                                                                          
+//=====================================================================
+//--        _______   ___
+//--       (   ____/ /__/
+//--        \ \     __
+//--     ____\ \   / /
+//--    /_______\ /_/   MICROELECTRONICS
+//--
 //=====================================================================
 //
 // Designer   : Bob Hu
@@ -41,7 +48,7 @@ module sirv_sim_ram
   output [DW-1:0]   dout
 );
 
-    reg [DW-1:0] mem_r [0:DP-1];
+    reg [0:DP-1] [DW-1:0] mem_r;
     reg [AW-1:0] addr_r;
     wire [MW-1:0] wen;
     wire ren;
