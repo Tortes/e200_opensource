@@ -34,6 +34,7 @@
 `include "e203_defines.v"
 // ====================================================================
 module e203_exu_disp(
+  //WFI 休眠
   input  wfi_halt_exu_req,
   output wfi_halt_exu_ack,
 
@@ -41,62 +42,67 @@ module e203_exu_disp(
   input  amo_wait,
   //////////////////////////////////////////////////////////////
   // The operands and decode info from dispatch
-  input  disp_i_valid, // Handshake valid
-  output disp_i_ready, // Handshake ready 
+  input  disp_i_valid, // Handshake valid   i_valid
+  output disp_i_ready, // Handshake ready   i_ready
 
-  // The operand 1/2 read-enable signals and indexes
+  // The operand  1/2 read-enable signals and indexes
   //译码信息
-  input  disp_i_rs1x0,
-  input  disp_i_rs2x0,
-  input  disp_i_rs1en,
-  input  disp_i_rs2en,
-  input  [`E203_RFIDX_WIDTH-1:0] disp_i_rs1idx,
-  input  [`E203_RFIDX_WIDTH-1:0] disp_i_rs2idx,
-  input  [`E203_XLEN-1:0] disp_i_rs1,
-  input  [`E203_XLEN-1:0] disp_i_rs2,
-  input  disp_i_rdwen,
-  input  [`E203_RFIDX_WIDTH-1:0] disp_i_rdidx,
-  input  [`E203_DECINFO_WIDTH-1:0]  disp_i_info,  
-  input  [`E203_XLEN-1:0] disp_i_imm,
-  input  [`E203_PC_SIZE-1:0] disp_i_pc,
-  input  disp_i_misalgn,
-  input  disp_i_buserr ,
-  input  disp_i_ilegl  ,
+  input  disp_i_rs1x0,  //  dec_rs1x0 源操作数 1 的寄存器索引为 xO
+  input  disp_i_rs2x0,  //  dec_rs2x0 源操作数 2 的寄存器索引为 xO
+  input  disp_i_rs1en,  //  该指令需要读取源操作数 1
+  input  disp_i_rs2en,  //  该指令需要读取源操作数 2
+  input  [`E203_RFIDX_WIDTH-1:0] disp_i_rs1idx, //  i_rs1idx    指令源操作数 1 的寄存器索引(minidec)
+  input  [`E203_RFIDX_WIDTH-1:0] disp_i_rs2idx, //  i_rs2idx 
+  input  [`E203_XLEN-1:0] disp_i_rs1,           //  rf_rs1
+  input  [`E203_XLEN-1:0] disp_i_rs2,           //  rf_rs2
+  input  disp_i_rdwen,                          //  dec_rdwen   该指令需要写结果操作数  
+  input  [`E203_RFIDX_WIDTH-1:0] disp_i_rdidx,  //  dec_rdidx   该指令结果寄存器索引
+  input  [`E203_DECINFO_WIDTH-1:0]  disp_i_info,  //dec_info
+  input  [`E203_XLEN-1:0] disp_i_imm,           //  dec_imm     该指令使用的立即数的值
+  input  [`E203_PC_SIZE-1:0] disp_i_pc,         //  dec_pc
+  input  disp_i_misalgn,                        //  发生了非对齐错误
+  input  disp_i_buserr ,                        //  发生了存储器访问错误
+  input  disp_i_ilegl  ,                        //  译码后发现其是一条非法指令
 
 // 输入输出 - 直接发射到ALU
   //////////////////////////////////////////////////////////////
   // Dispatch to ALU
-  output disp_o_alu_valid, 
+  output disp_o_alu_valid, //直接对接
   input  disp_o_alu_ready,
 
   input  disp_o_alu_longpipe,
-
-  output [`E203_XLEN-1:0] disp_o_alu_rs1,
+  //派遣操作数
+  output [`E203_XLEN-1:0] disp_o_alu_rs1, 
   output [`E203_XLEN-1:0] disp_o_alu_rs2,
+  //派遣指令信息
   output disp_o_alu_rdwen,
   output [`E203_RFIDX_WIDTH-1:0] disp_o_alu_rdidx,
-  output [`E203_DECINFO_WIDTH-1:0]  disp_o_alu_info,  
+  output [`E203_DECINFO_WIDTH-1:0]  disp_o_alu_info, 
+  //指令使用的立即数的值 
   output [`E203_XLEN-1:0] disp_o_alu_imm,
   output [`E203_PC_SIZE-1:0] disp_o_alu_pc,
   output [`E203_ITAG_WIDTH-1:0] disp_o_alu_itag,
+  //错误信息
   output disp_o_alu_misalgn,
   output disp_o_alu_buserr ,
   output disp_o_alu_ilegl  ,
 
-// =================================================================
+// =ir_rs1idx_r================================================================
+ir_rs1idx_r
+// ir_rs1idx_r输入输出 - 发射到OITF检查冲突
+  //ir_rs1idx_r////////////////////////////////////////////////////////////
+  //ir_rs1idx_r Dispatch to OITF
+ir_rs1idx_r
+  inir_rs1idx_rput  oitfrd_match_disprs1,  //  派遣指令源操作数一和 OITF 任一表项中的结果寄存器相同
+  inir_rs1idx_rput  oitfrd_match_disprs2,
+  inir_rs1idx_rput  oitfrd_match_disprs3,
+  inir_rs1idx_rput  oitfrd_match_disprd,   //  派遣指令结果寄存器和 OITF 任一表项中的结果寄存器相同
+  inir_rs1idx_rput  [`E203_ITAG_WIDTH-1:0] disp_oitf_ptr ,
+ir_rs1idx_r
+  ouir_rs1idx_rtput disp_oitf_ena,
+  inir_rs1idx_rput  disp_oitf_ready,
 
-// 输入输出 - 发射到OITF检查冲突
-  //////////////////////////////////////////////////////////////
-  // Dispatch to OITF
-  input  oitfrd_match_disprs1,
-  input  oitfrd_match_disprs2,
-  input  oitfrd_match_disprs3,
-  input  oitfrd_match_disprd,
-  input  [`E203_ITAG_WIDTH-1:0] disp_oitf_ptr ,
-
-  output disp_oitf_ena,
-  input  disp_oitf_ready,
-
+  //浮点运算
   output disp_oitf_rs1fpu,
   output disp_oitf_rs2fpu,
   output disp_oitf_rs3fpu,
@@ -148,6 +154,7 @@ module e203_exu_disp(
   // Since any instruction will need to be dispatched to ALU, we dont need the gate here
   //   wire   disp_i_ready_pos = disp_alu & disp_o_alu_ready;
   //   assign disp_o_alu_valid = disp_alu & disp_i_valid_pos; 
+  //  直接对接
   wire disp_i_valid_pos; 
   wire   disp_i_ready_pos = disp_o_alu_ready;
   assign disp_o_alu_valid = disp_i_valid_pos; 
@@ -187,7 +194,7 @@ module e203_exu_disp(
   //             on last ALU instructions as RAW. 
   //             Note: if it is 3 pipeline stages, then we also need to consider the non-ALU-to-ALU 
   //                   RAW dependency.
-
+  //RAW
   wire raw_dep =  ((oitfrd_match_disprs1) |
                    (oitfrd_match_disprs2) |
                    (oitfrd_match_disprs3)); 
@@ -209,6 +216,7 @@ module e203_exu_disp(
                //   it just does not change any benchmark number, so just remove that condition out. Means
                //   all of the instructions will check waw_dep
   //wire alu_waw_dep = (~disp_alu_longp_prdt) & (oitfrd_match_disprd & disp_i_rdwen); 
+  //WAW
   wire waw_dep = (oitfrd_match_disprd); 
 
   wire dep = raw_dep | waw_dep;
@@ -249,10 +257,12 @@ module e203_exu_disp(
   //assign disp_o_alu_rdwen = disp_alu & disp_i_rdwen;
   //assign disp_o_alu_rdidx = {`E203_RFIDX_WIDTH{disp_alu}} & disp_i_rdidx;
   //assign disp_o_alu_info  = {`E203_DECINFO_WIDTH{disp_alu}} & disp_i_info;  
+  //派遣操作数rs1, rs2
   assign disp_o_alu_rs1   = disp_i_rs1_msked;
   assign disp_o_alu_rs2   = disp_i_rs2_msked;
-  assign disp_o_alu_rdwen = disp_i_rdwen;
-  assign disp_o_alu_rdidx = disp_i_rdidx;
+  //派遣指令信息
+  assign disp_o_alu_rdwen = disp_i_rdwen; //是否写回结果给寄存器
+  assign disp_o_alu_rdidx = disp_i_rdidx; //写回的寄存器索引
   assign disp_o_alu_info  = disp_i_info;  
   
     // Why we use precise version of disp_longp here, because
