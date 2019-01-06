@@ -810,14 +810,11 @@ module e203_core(
     .clint_icb_rsp_rdata     (clint_icb_rsp_rdata),
 
 
-  `ifdef E203_HAS_FIO //{    .eai_csr_ready (eai_csr_ready),
+  `ifdef E203_HAS_FIO //
 
-    .fio_region_indic      (f    .eai_csr_ready (eai_csr_ready),
-io_region_indic ),
-    .fio_icb_enable        (f    .eai_csr_ready (eai_csr_ready),
-io_icb_enable),
-    .fio_icb_cmd_valid     (f    .eai_csr_ready (eai_csr_ready),
-io_icb_cmd_valid),
+    .fio_region_indic      (fio_region_indic ),
+    .fio_icb_enable        (fio_icb_enable),
+    .fio_icb_cmd_valid     (fio_icb_cmd_valid),
     .fio_icb_cmd_ready     (fio_icb_cmd_ready),
     .fio_icb_cmd_addr      (fio_icb_cmd_addr ),
     .fio_icb_cmd_read      (fio_icb_cmd_read ),

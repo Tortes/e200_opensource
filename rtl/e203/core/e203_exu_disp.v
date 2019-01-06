@@ -67,7 +67,8 @@ module e203_exu_disp(
 // 输入输出 - 直接发射到ALU
   //////////////////////////////////////////////////////////////
   // Dispatch to ALU
-  output disp_o_alu_valid, //直接对接
+
+  output disp_o_alu_valid,
   input  disp_o_alu_ready,
 
   input  disp_o_alu_longpipe,
@@ -87,20 +88,20 @@ module e203_exu_disp(
   output disp_o_alu_buserr ,
   output disp_o_alu_ilegl  ,
 
-// =ir_rs1idx_r================================================================
-ir_rs1idx_r
-// ir_rs1idx_r输入输出 - 发射到OITF检查冲突
-  //ir_rs1idx_r////////////////////////////////////////////////////////////
-  //ir_rs1idx_r Dispatch to OITF
-ir_rs1idx_r
-  inir_rs1idx_rput  oitfrd_match_disprs1,  //  派遣指令源操作数一和 OITF 任一表项中的结果寄存器相同
-  inir_rs1idx_rput  oitfrd_match_disprs2,
-  inir_rs1idx_rput  oitfrd_match_disprs3,
-  inir_rs1idx_rput  oitfrd_match_disprd,   //  派遣指令结果寄存器和 OITF 任一表项中的结果寄存器相同
-  inir_rs1idx_rput  [`E203_ITAG_WIDTH-1:0] disp_oitf_ptr ,
-ir_rs1idx_r
-  ouir_rs1idx_rtput disp_oitf_ena,
-  inir_rs1idx_rput  disp_oitf_ready,
+// =================================================================
+
+// 输入输出 - 发射到OITF检查冲突
+  //////////////////////////////////////////////////////////////
+  //Dispatch to OITF
+
+  input  oitfrd_match_disprs1,  //  派遣指令源操作数一和 OITF 任一表项中的结果寄存器相同
+  input  oitfrd_match_disprs2,
+  input  oitfrd_match_disprs3,
+  input  oitfrd_match_disprd,   //  派遣指令结果寄存器和 OITF 任一表项中的结果寄存器相同
+  input  [`E203_ITAG_WIDTH-1:0] disp_oitf_ptr ,
+
+  output disp_oitf_ena,
+  input  disp_oitf_ready,
 
   //浮点运算
   output disp_oitf_rs1fpu,
@@ -154,7 +155,6 @@ ir_rs1idx_r
   // Since any instruction will need to be dispatched to ALU, we dont need the gate here
   //   wire   disp_i_ready_pos = disp_alu & disp_o_alu_ready;
   //   assign disp_o_alu_valid = disp_alu & disp_i_valid_pos; 
-  //  直接对接
   wire disp_i_valid_pos; 
   wire   disp_i_ready_pos = disp_o_alu_ready;
   assign disp_o_alu_valid = disp_i_valid_pos; 
