@@ -336,7 +336,7 @@ module e203_exu(
 
     .disp_i_valid        (i_valid         ),
     .disp_i_ready        (i_ready         ),
-                                       
+    //译码得到的信息                                   
     .disp_i_rs1x0        (dec_rs1x0       ),
     .disp_i_rs2x0        (dec_rs2x0       ),
     .disp_i_rs1en        (dec_rs1en       ),

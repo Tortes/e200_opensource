@@ -34,6 +34,8 @@
 
 `include "e203_defines.v"
 
+// ====================================================================
+//声明cpu
 module e203_cpu #(
     parameter MASTER = 1
 )(
@@ -293,6 +295,7 @@ module e203_cpu #(
   input  rst_n
   );
 
+// ====================================================================
   wire core_cgstop;
   wire tcm_cgstop;
   
@@ -323,6 +326,8 @@ module e203_cpu #(
   wire clk_aon;
 
   // The reset ctrl and clock ctrl should be in the power always-on domain
+// ====================================================================
+//实例化reset_ctrl
 
   e203_reset_ctrl #(.MASTER(MASTER)) u_e203_reset_ctrl (
     .clk        (clk_aon  ),
@@ -344,7 +349,8 @@ module e203_cpu #(
   );
 
 
-
+// ====================================================================
+//实例化clk_ctrl
   e203_clk_ctrl u_e203_clk_ctrl(
     .clk          (clk          ),
     .rst_n        (rst_aon      ),
@@ -378,10 +384,13 @@ module e203_cpu #(
     .core_wfi     (core_wfi ) 
   );
 
+// ====================================================================
   wire ext_irq_r;
   wire sft_irq_r;
   wire tmr_irq_r;
 
+// ====================================================================
+//实例化irq_sync
   e203_irq_sync  #(.MASTER(MASTER)) u_e203_irq_sync(
     .clk       (clk_aon  ),
     .rst_n     (rst_aon  ),
@@ -399,7 +408,7 @@ module e203_cpu #(
   );
 
 
-
+// ====================================================================
   `ifdef E203_HAS_ITCM //{
   wire ifu2itcm_holdup;
   //wire ifu2itcm_replay;
@@ -454,6 +463,10 @@ module e203_cpu #(
 
   // This is an empty module to just connect the EAI CSR interface, 
   //  user can hack it to become a real one
+
+  // ====================================================================
+  //实例化extend_csr
+  //empty module
   e203_extend_csr u_e203_extend_csr(
     .eai_csr_valid (eai_csr_valid),
     .eai_csr_ready (eai_csr_ready),
@@ -467,7 +480,8 @@ module e203_cpu #(
   `endif//}
 
  
-
+// ====================================================================
+//实例化core
   e203_core u_e203_core(
     .inspect_pc            (inspect_pc),
 
@@ -690,6 +704,9 @@ module e203_cpu #(
   );
 
   `ifdef E203_HAS_ITCM //{
+
+  // ====================================================================
+  //实例化itcm_ctrl
   e203_itcm_ctrl u_e203_itcm_ctrl(
     .tcm_cgstop   (tcm_cgstop),
 
@@ -751,6 +768,8 @@ module e203_cpu #(
   `endif//}
 
   `ifdef E203_HAS_DTCM //{
+    // ====================================================================
+    //实例化dtcm_ctrl
   e203_dtcm_ctrl u_e203_dtcm_ctrl(
     .tcm_cgstop   (tcm_cgstop),
 

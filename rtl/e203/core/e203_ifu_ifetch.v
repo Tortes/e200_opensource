@@ -33,6 +33,7 @@
 // ====================================================================
 `include "e203_defines.v"
 
+// ====================================================================
 module e203_ifu_ifetch(
   output[`E203_PC_SIZE-1:0] inspect_pc,
 
@@ -113,17 +114,26 @@ module e203_ifu_ifetch(
   input  rst_n
   );
 
-  wire ifu_req_hsked  = (ifu_req_valid & ifu_req_ready) ;
-  wire ifu_rsp_hsked  = (ifu_rsp_valid & ifu_rsp_ready) ;
-  wire ifu_ir_o_hsked = (ifu_o_valid & ifu_o_ready) ;
-  wire pipe_flush_hsked = pipe_flush_req & pipe_flush_ack;
+
+// ====================================================================
+
+
+  wire ifu_req_hsked  = (ifu_req_valid & ifu_req_ready) ; //require shake hand
+  wire ifu_rsp_hsked  = (ifu_rsp_valid & ifu_rsp_ready) ; //return shake hand
+  wire ifu_ir_o_hsked = (ifu_o_valid & ifu_o_ready) ;     //output shake hand
+  wire pipe_flush_hsked = pipe_flush_req & pipe_flush_ack;//flush shake hand
 
   
  // The rst_flag is the synced version of rst_n
  //    * rst_n is asserted 
  // The rst_flag will be clear when
- //    * rst_n is de-asserted 
+ //    * rst_n is de-asserted
+
+ // ====================================================================
+ //Reset 
+   //DFF模块例化寄存器
   wire reset_flag_r;
+  //(input, output, clk, rst)
   sirv_gnrl_dffrs #(1) reset_flag_dffrs (1'b0, reset_flag_r, clk, rst_n);
  //
  // The reset_req valid is set when 
@@ -137,6 +147,9 @@ module e203_ifu_ifetch(
   wire reset_req_ena = reset_req_set | reset_req_clr;
   wire reset_req_nxt = reset_req_set | (~reset_req_clr);
 
+// ====================================================================
+//Reset 
+//(enable, input, output, clk, rst)
   sirv_gnrl_dfflr #(1) reset_req_dfflr (reset_req_ena, reset_req_nxt, reset_req_r, clk, rst_n);
 
   wire ifu_reset_req = reset_req_r;
@@ -147,7 +160,8 @@ module e203_ifu_ifetch(
 
   //////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////
-  // The halt ack generation
+  // The halt ack generation 
+  // 生成阻塞
   wire halt_ack_set;
   wire halt_ack_clr;
   wire halt_ack_ena;
@@ -231,18 +245,25 @@ module e203_ifu_ifetch(
   wire ifu_rsp_need_replay;
   wire pc_newpend_r;
   wire ifu_ir_i_ready;
+  // ====================================================================
+  // if Instruction Register is valid(shake hand): rsp & !flush & !replay
   assign ir_valid_set  = ifu_rsp_hsked & (~pipe_flush_req_real) & (~ifu_rsp_need_replay);
+  // if pc is valid: newpend & input ready & !flush & !replay
   assign ir_pc_vld_set = pc_newpend_r & ifu_ir_i_ready & (~pipe_flush_req_real) & (~ifu_rsp_need_replay);
      // The ir valid is cleared when it is accepted by EXU stage *or*
      //   the flush happening 
   assign ir_valid_clr  = ifu_ir_o_hsked | (pipe_flush_hsked & ir_valid_r);
   assign ir_pc_vld_clr = ir_valid_clr;
 
+  //ena & nxt
   assign ir_valid_ena  = ir_valid_set  | ir_valid_clr;
   assign ir_valid_nxt  = ir_valid_set  | (~ir_valid_clr);
   assign ir_pc_vld_ena = ir_pc_vld_set | ir_pc_vld_clr;
   assign ir_pc_vld_nxt = ir_pc_vld_set | (~ir_pc_vld_clr);
 
+  // ====================================================================
+  //DFF实例化  ir_valid_dfflr ir_pc_vld_dfflr
+  //(enable, input, output, clk, rst)
   sirv_gnrl_dfflr #(1) ir_valid_dfflr (ir_valid_ena, ir_valid_nxt, ir_valid_r, clk, rst_n);
   sirv_gnrl_dfflr #(1) ir_pc_vld_dfflr (ir_pc_vld_ena, ir_pc_vld_nxt, ir_pc_vld_r, clk, rst_n);
 
@@ -253,12 +274,23 @@ module e203_ifu_ifetch(
 
      // IFU-IR and IFU-PC as the datapath register, only loaded and toggle when the valid reg is set
   wire ifu_err_r;
+
+  // DFF实例化 ifu_err_r
+  //(enable, input, output, clk, rst)
   sirv_gnrl_dfflr #(1) ifu_err_dfflr(ir_valid_set, ifu_err_nxt, ifu_err_r, clk, rst_n);
+
   wire prdt_taken;  
   wire ifu_prdt_taken_r;
+
+   // DFF实例化 ifu_prdt_taken_r
+  //(enable, input, output, clk, rst)
   sirv_gnrl_dfflr #(1) ifu_prdt_taken_dfflr (ir_valid_set, prdt_taken, ifu_prdt_taken_r, clk, rst_n);
+
   wire ifu_muldiv_b2b_nxt;
   wire ifu_muldiv_b2b_r;
+
+   // DFF实例化 ifu_muldiv_b2b_r
+  //(enable, input, output, clk, rst)
   sirv_gnrl_dfflr #(1) ir_muldiv_b2b_dfflr (ir_valid_set, ifu_muldiv_b2b_nxt, ifu_muldiv_b2b_r, clk, rst_n);
      //To save power the H-16bits only loaded when it is 32bits length instru 
   wire [`E203_INSTR_SIZE-1:0] ifu_ir_r;// The instruction register
@@ -371,6 +403,8 @@ module e203_ifu_ifetch(
   wire minidec_bxx;
   wire [`E203_XLEN-1:0] minidec_bjp_imm;
 
+  // ====================================================================
+  //实例化ifu_minidec
   // The mini-decoder to check instruciton length and branch type 
   e203_ifu_minidec u_e203_ifu_minidec (
       .instr       (ifu_ir_nxt         ),
@@ -399,11 +433,13 @@ module e203_ifu_ifetch(
       .dec_bjp_imm (minidec_bjp_imm    )
 
   );
-
+  //分支预测
   wire bpu_wait;
   wire [`E203_PC_SIZE-1:0] prdt_pc_add_op1;  
   wire [`E203_PC_SIZE-1:0] prdt_pc_add_op2;
 
+  // ====================================================================
+  //实例化ifu_litebpu
   e203_ifu_litebpu u_e203_ifu_litebpu(
 
     .pc                       (pc_r),
@@ -435,16 +471,19 @@ module e203_ifu_ifetch(
     .clk                      (clk  ) ,
     .rst_n                    (rst_n )                 
   );
+
+  //PC生成
   // If the instruciton is 32bits length, increament 4, otherwise 2
   wire [2:0] pc_incr_ofst = minidec_rv32 ? 3'd4 : 3'd2;
 
   wire [`E203_PC_SIZE-1:0] pc_nxt_pre;
   wire [`E203_PC_SIZE-1:0] pc_nxt;
-
+  //是否要跳转取指
   wire bjp_req = minidec_bjp & prdt_taken;
-
+  
   wire ifetch_replay_req;
 
+  //选择加法器的输入
   wire [`E203_PC_SIZE-1:0] pc_add_op1 = 
                             `ifndef E203_TIMING_BOOST//}
                                pipe_flush_req  ? pipe_flush_add_op1 :
@@ -464,11 +503,12 @@ module e203_ifu_ifetch(
                                bjp_req ? prdt_pc_add_op2    :
                                ifu_reset_req   ? `E203_PC_SIZE'b0 :
                                                  pc_incr_ofst ;
-
+  //是否为顺序取指: !flush & !reset & !replay !bjp
   assign ifu_req_seq = (~pipe_flush_req_real) & (~ifu_reset_req) & (~ifetch_replay_req) & (~bjp_req);
   assign ifu_req_seq_rv32 = minidec_rv32;
   assign ifu_req_last_pc = pc_r;
 
+  //计算下一条PC初步值
   assign pc_nxt_pre = pc_add_op1 + pc_add_op2;
   `ifndef E203_TIMING_BOOST//}
   assign pc_nxt = {pc_nxt_pre[`E203_PC_SIZE-1:1],1'b0};
@@ -510,7 +550,7 @@ module e203_ifu_ifetch(
 
   // The PC will need to be updated when ifu req channel handshaked or a flush is incoming
   wire pc_ena = ifu_req_hsked | pipe_flush_hsked;
-
+//**
   sirv_gnrl_dfflr #(`E203_PC_SIZE) pc_dfflr (pc_ena, pc_nxt, pc_r, clk, rst_n);
 
 

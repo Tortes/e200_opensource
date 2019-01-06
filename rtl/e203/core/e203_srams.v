@@ -33,7 +33,8 @@
 // ====================================================================
 
 `include "e203_defines.v"
-
+// ====================================================================
+//声明srams
 module e203_srams(
 
   `ifdef E203_HAS_ITCM //{
@@ -70,11 +71,14 @@ module e203_srams(
 
 );
 
+// ====================================================================
 
                                                       
   `ifdef E203_HAS_ITCM //{
   wire [`E203_ITCM_RAM_DW-1:0]  itcm_ram_dout_pre;
 
+// ====================================================================
+//实例化itcm_ram
   e203_itcm_ram u_e203_itcm_ram (
     .sd   (itcm_ram_sd),
     .ds   (itcm_ram_ds),
@@ -98,6 +102,8 @@ module e203_srams(
   `ifdef E203_HAS_DTCM //{
   wire [`E203_DTCM_RAM_DW-1:0]  dtcm_ram_dout_pre;
 
+// ====================================================================
+//实例化dtcm_ram
   e203_dtcm_ram u_e203_dtcm_ram (
     .sd   (dtcm_ram_sd),
     .ds   (dtcm_ram_ds),

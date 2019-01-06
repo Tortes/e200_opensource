@@ -33,6 +33,9 @@
 // ====================================================================
 `include "e203_defines.v"
 
+// ====================================================================
+//声明ifu
+
 module e203_ifu(
   output[`E203_PC_SIZE-1:0] inspect_pc,
   output ifu_active,
@@ -132,7 +135,7 @@ module e203_ifu(
   input  clk,
   input  rst_n
   );
-
+// ====================================================================
   
   wire ifu_req_valid; 
   wire ifu_req_ready; 
@@ -145,6 +148,9 @@ module e203_ifu(
   wire ifu_rsp_err;   
   //wire ifu_rsp_replay;   
   wire [`E203_INSTR_SIZE-1:0] ifu_rsp_instr; 
+
+// ====================================================================
+//实例化 ifu_ifetch
 
   e203_ifu_ifetch u_e203_ifu_ifetch(
     .inspect_pc   (inspect_pc),
@@ -198,6 +204,8 @@ module e203_ifu(
   );
 
 
+// ====================================================================
+//实例化ifu_ift2icb
 
   e203_ifu_ift2icb u_e203_ifu_ift2icb (
     .ifu_req_valid (ifu_req_valid),
@@ -244,6 +252,7 @@ module e203_ifu(
     .clk           (clk          ),
     .rst_n         (rst_n        ) 
   );
+  // ====================================================================
 
   assign ifu_active = 1'b1;// Seems the IFU never rest at block level
   

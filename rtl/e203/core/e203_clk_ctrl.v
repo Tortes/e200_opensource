@@ -33,6 +33,8 @@
 // ====================================================================
 
 `include "e203_defines.v"
+// ====================================================================
+//声明clk_ctrl
 
 module e203_clk_ctrl (
   input  clk,        // clock
@@ -78,6 +80,8 @@ module e203_clk_ctrl (
   input  core_wfi
 );
 
+// ====================================================================
+
   // The CSR control bit CGSTOP will override the automatical clock gating here for special debug purpose
 
       // The IFU is always actively fetching unless it is WFI to override it
@@ -92,7 +96,8 @@ module e203_clk_ctrl (
 
 
 
-
+// ====================================================================
+//实例化ifu_clkgate
   e203_clkgate u_ifu_clkgate(
     .clk_in   (clk        ),
     .test_mode(test_mode  ),
@@ -121,6 +126,8 @@ module e203_clk_ctrl (
     .clk_out  (clk_core_biu)
   );
 
+// ====================================================================
+
   `ifdef E203_HAS_ITCM
       // The ITCM and DTCM Ctrl module's clock gating does not need to check
       //  WFI because it may have request from external agent
@@ -131,6 +138,8 @@ module e203_clk_ctrl (
   wire itcm_clk_en = core_cgstop | itcm_active | itcm_active_r;
   assign itcm_ls = ~itcm_clk_en;
 
+// ====================================================================
+//实例化itcm_clkgate
   e203_clkgate u_itcm_clkgate(
     .clk_in   (clk        ),
     .test_mode(test_mode  ),

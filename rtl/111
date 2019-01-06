@@ -1,0 +1,18 @@
+*********************ifu_ifetch***************************
+module ifetch
+DFF -> reset_flag_r
+DFF -> reset_req_r
+halt generation
+flush ack generation
+IR registion -> valid       (new instruction fetched)
+                            (no flush happening)
+
+             -> cleared     (accepted by EXU stage)
+                            (the flush happening)
+DFF ->  ir_valid_dfflr
+DFF ->  ir_pc_vld_dfflr
+ifu_ir_nxt <- ifu_rsp_instr (接收RSP的返回指令)
+ifu_err_nxt <- ifu_rsp_err  (接收PC)
+DFF -> ifu_err_r
+
+*********************exu_disp***************************

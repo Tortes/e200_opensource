@@ -32,7 +32,7 @@
 //
 // ====================================================================
 `include "e203_defines.v"
-
+// ====================================================================
 module e203_exu_disp(
   input  wfi_halt_exu_req,
   output wfi_halt_exu_ack,
@@ -45,6 +45,7 @@ module e203_exu_disp(
   output disp_i_ready, // Handshake ready 
 
   // The operand 1/2 read-enable signals and indexes
+  //译码信息
   input  disp_i_rs1x0,
   input  disp_i_rs2x0,
   input  disp_i_rs1en,
@@ -62,7 +63,7 @@ module e203_exu_disp(
   input  disp_i_buserr ,
   input  disp_i_ilegl  ,
 
-
+// 输入输出 - 直接发射到ALU
   //////////////////////////////////////////////////////////////
   // Dispatch to ALU
   output disp_o_alu_valid, 
@@ -82,6 +83,9 @@ module e203_exu_disp(
   output disp_o_alu_buserr ,
   output disp_o_alu_ilegl  ,
 
+// =================================================================
+
+// 输入输出 - 发射到OITF检查冲突
   //////////////////////////////////////////////////////////////
   // Dispatch to OITF
   input  oitfrd_match_disprs1,
@@ -114,7 +118,7 @@ module e203_exu_disp(
   input  clk,
   input  rst_n
   );
-
+// =================================================================
 
   wire [`E203_DECINFO_GRP_WIDTH-1:0] disp_i_info_grp  = disp_i_info [`E203_DECINFO_GRP];
 
@@ -152,12 +156,16 @@ module e203_exu_disp(
   // The Dispatch Scheme Introduction for two-pipeline stage
   //  #1: The instruction after dispatched must have already have operand fetched, so
   //      there is no any WAR dependency happened.
+  //  #1: 按序发射避免WAR
   //  #2: The ALU-instruction are dispatched and executed in-order inside ALU, so
   //      there is no any WAW dependency happened among ALU instructions.
   //      Note: LSU since its AGU is handled inside ALU, so it is treated as a ALU instruction
+  //  #2: ALU顺序执行避免WAW
   //  #3: The non-ALU-instruction are all tracked by OITF, and must be write-back in-order, so 
   //      it is like ALU in-ordered. So there is no any WAW dependency happened among
   //      non-ALU instructions.
+  //  #3: 非ALU指令会经过OITF的检查，且按序写回，同时避免WAW
+
   //  Then what dependency will we have?
   //  * RAW: This is the real dependency
   //  * WAW: The WAW between ALU an non-ALU instructions
@@ -259,7 +267,7 @@ module e203_exu_disp(
   assign disp_o_alu_ilegl  = disp_i_ilegl  ;
 
 
-
+// FPU 指令
   `ifndef E203_HAS_FPU//{
   wire disp_i_fpu       = 1'b0;
   wire disp_i_fpu_rs1en = 1'b0;
@@ -275,6 +283,8 @@ module e203_exu_disp(
   wire disp_i_fpu_rs3fpu = 1'b0;
   wire disp_i_fpu_rdfpu  = 1'b0;
   `endif//}
+// =================================================================
+
   assign disp_oitf_rs1fpu = disp_i_fpu ? (disp_i_fpu_rs1en & disp_i_fpu_rs1fpu) : 1'b0;
   assign disp_oitf_rs2fpu = disp_i_fpu ? (disp_i_fpu_rs2en & disp_i_fpu_rs2fpu) : 1'b0;
   assign disp_oitf_rs3fpu = disp_i_fpu ? (disp_i_fpu_rs3en & disp_i_fpu_rs3fpu) : 1'b0;

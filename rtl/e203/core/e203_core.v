@@ -33,7 +33,8 @@
 // ====================================================================
 
 `include "e203_defines.v"
-
+  // ===========================================================================
+  //声明core module
 module e203_core(
   output[`E203_PC_SIZE-1:0] inspect_pc,
 
@@ -292,7 +293,7 @@ module e203_core(
   input test_mode,
   input  rst_n
   );
-
+  // ===========================================================================
     `ifdef E203_HAS_MEM_ITF //{
   wire                         ifu2biu_icb_cmd_valid;
   wire                         ifu2biu_icb_cmd_ready;
@@ -345,6 +346,9 @@ module e203_core(
 
   wire itcm_nohold;
 
+
+  // ===========================================================================
+  //实例化ifu
   e203_ifu u_e203_ifu(
     .inspect_pc   (inspect_pc),
 
@@ -420,7 +424,7 @@ module e203_core(
     .clk                    (clk_core_ifu  ),
     .rst_n                  (rst_n         ) 
   );
-
+  // ===========================================================================
   
 
   wire                         lsu_o_valid; 
@@ -455,6 +459,9 @@ module e203_core(
   wire commit_trap;
   wire excp_active;
 
+
+  // ===========================================================================
+  //实例化exu
   e203_exu u_e203_exu(
 
   `ifdef E203_HAS_CSR_EAI//{
@@ -594,6 +601,8 @@ module e203_core(
   wire                         lsu2biu_icb_rsp_excl_ok;
   wire [`E203_XLEN-1:0]        lsu2biu_icb_rsp_rdata;
 
+  // ===========================================================================
+  //实例化lsu
   e203_lsu u_e203_lsu(
     .excp_active         (excp_active),
     .commit_mret            (commit_mret),
@@ -693,6 +702,8 @@ module e203_core(
   );
 
 
+  // ===========================================================================
+  //实例化biu
   e203_biu u_e203_biu(
 
 
@@ -799,10 +810,14 @@ module e203_core(
     .clint_icb_rsp_rdata     (clint_icb_rsp_rdata),
 
 
-  `ifdef E203_HAS_FIO //{
-    .fio_region_indic      (fio_region_indic ),
-    .fio_icb_enable        (fio_icb_enable),
-    .fio_icb_cmd_valid     (fio_icb_cmd_valid),
+  `ifdef E203_HAS_FIO //{    .eai_csr_ready (eai_csr_ready),
+
+    .fio_region_indic      (f    .eai_csr_ready (eai_csr_ready),
+io_region_indic ),
+    .fio_icb_enable        (f    .eai_csr_ready (eai_csr_ready),
+io_icb_enable),
+    .fio_icb_cmd_valid     (f    .eai_csr_ready (eai_csr_ready),
+io_icb_cmd_valid),
     .fio_icb_cmd_ready     (fio_icb_cmd_ready),
     .fio_icb_cmd_addr      (fio_icb_cmd_addr ),
     .fio_icb_cmd_read      (fio_icb_cmd_read ),

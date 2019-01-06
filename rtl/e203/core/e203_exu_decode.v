@@ -34,9 +34,10 @@
 `include "e203_defines.v"
 
 module e203_exu_decode(
-
-  //////////////////////////////////////////////////////////////
+// IFU 输入到 EXU Decode 模块的信号
+  //////////////////////////////////////////////////////////////、
   // The IR stage to Decoder
+
   input  [`E203_INSTR_SIZE-1:0] i_instr,
   input  [`E203_PC_SIZE-1:0] i_pc,
   input  i_prdt_taken, 
@@ -45,9 +46,11 @@ module e203_exu_decode(
   input  i_muldiv_b2b,           // The back2back case for mul/div
 
   input  dbg_mode,
+// ====================================================================
+
+// 指令译码得到的信息
   //////////////////////////////////////////////////////////////
   // The Decoded Info-Bus
-
   output dec_rs1x0,
   output dec_rs2x0,
   output dec_rs1en,
@@ -80,9 +83,9 @@ module e203_exu_decode(
   output [`E203_RFIDX_WIDTH-1:0] dec_jalr_rs1idx,
   output [`E203_XLEN-1:0] dec_bjp_imm 
   );
-
-
-
+// ====================================================================
+  
+// 编码段
   wire [32-1:0] rv32_instr = i_instr;
   wire [16-1:0] rv16_instr = i_instr[15:0];
 
@@ -110,8 +113,9 @@ module e203_exu_decode(
   wire [4:0]  rv16_rss2   = rv16_rdd;
 
   wire [2:0]  rv16_func3  = rv32_instr[15:13];
+// ====================================================================
 
-  
+// 临时变量
   // We generate the signals and reused them as much as possible to save gatecounts
   wire opcode_4_2_000 = (opcode[4:2] == 3'b000);
   wire opcode_4_2_001 = (opcode[4:2] == 3'b001);
@@ -185,7 +189,9 @@ module e203_exu_decode(
   wire rv32_rs1_x31 = (rv32_rs1 == 5'b11111);
   wire rv32_rs2_x31 = (rv32_rs2 == 5'b11111);
   wire rv32_rd_x31  = (rv32_rd  == 5'b11111);
+// ====================================================================
 
+// BJP & System 指令
   wire rv32_load     = opcode_6_5_00 & opcode_4_2_000 & opcode_1_0_11; 
   wire rv32_store    = opcode_6_5_01 & opcode_4_2_000 & opcode_1_0_11; 
   wire rv32_madd     = opcode_6_5_10 & opcode_4_2_000 & opcode_1_0_11; 
@@ -304,12 +310,6 @@ module e203_exu_decode(
                          & (rv16_instr[12]) & (~rv16_rs1_x0) & (rv16_rs2_x0);
   wire rv16_add          = rv16_jalr_mv_add // 
                          & (rv16_instr[12]) & (~rv16_rd_x0) & (~rv16_rs2_x0);
-
-  
- 
-
-
-  // ===========================================================================
   // Branch Instructions
   wire rv32_beq      = rv32_branch & rv32_func3_000;
   wire rv32_bne      = rv32_branch & rv32_func3_001;
@@ -338,7 +338,6 @@ module e203_exu_decode(
 
   wire rv32_ecall_ebreak_ret_wfi = rv32_system & rv32_func3_000;
   wire rv32_csr          = rv32_system & (~rv32_func3_000);
-
 
   // ===========================================================================
     // The Branch and system group of instructions will be handled by BJP
@@ -370,8 +369,9 @@ module e203_exu_decode(
   assign bjp_info_bus[`E203_DECINFO_BJP_DRET ]  = rv32_dret;
   assign bjp_info_bus[`E203_DECINFO_BJP_FENCE ]  = rv32_fence;
   assign bjp_info_bus[`E203_DECINFO_BJP_FENCEI]  = rv32_fence_i;
+// ===========================================================================
 
-
+// Regular ALU 指令
   // ===========================================================================
   // ALU Instructions
   wire rv32_addi     = rv32_op_imm & rv32_func3_000;
@@ -445,9 +445,9 @@ module e203_exu_decode(
   assign alu_info_bus[`E203_DECINFO_ALU_ECAL ]  = rv32_ecall; 
   assign alu_info_bus[`E203_DECINFO_ALU_EBRK ]  = rv32_ebreak | rv16_ebreak;
   assign alu_info_bus[`E203_DECINFO_ALU_WFI  ]  = rv32_wfi;
+// ===========================================================================
 
-
-  
+// CSR 指令
   wire csr_op = rv32_csr;
   wire [`E203_DECINFO_CSR_WIDTH-1:0] csr_info_bus;
   assign csr_info_bus[`E203_DECINFO_GRP    ]    = `E203_DECINFO_GRP_CSR;
@@ -459,16 +459,18 @@ module e203_exu_decode(
   assign csr_info_bus[`E203_DECINFO_CSR_ZIMMM ] = rv32_rs1;
   assign csr_info_bus[`E203_DECINFO_CSR_RS1IS0] = rv32_rs1_x0;
   assign csr_info_bus[`E203_DECINFO_CSR_CSRIDX] = rv32_instr[31:20];
+// ===========================================================================
 
-  
+// Mem Order 指令
   // ===========================================================================
   // Memory Order Instructions
   assign rv32_fence    = rv32_miscmem & rv32_func3_000;
   assign rv32_fence_i  = rv32_miscmem & rv32_func3_001;
 
   assign rv32_fence_fencei  = rv32_miscmem;
+// ===========================================================================
 
-
+// 乘除 指令
   // ===========================================================================
   // MUL/DIV Instructions
   wire rv32_mul      = rv32_op     & rv32_func3_000 & rv32_func7_0000001;
@@ -507,7 +509,9 @@ module e203_exu_decode(
   assign dec_divu   = rv32_divu;
   assign dec_rem    = rv32_rem;
   assign dec_remu   = rv32_remu;
- 
+// ===========================================================================
+
+// AGU 指令 
   // ===========================================================================
   // Load/Store Instructions
   wire rv32_lb       = rv32_load   & rv32_func3_000;
@@ -519,7 +523,6 @@ module e203_exu_decode(
   wire rv32_sb       = rv32_store  & rv32_func3_000;
   wire rv32_sh       = rv32_store  & rv32_func3_001;
   wire rv32_sw       = rv32_store  & rv32_func3_010;
-
 
   // ===========================================================================
   // Atomic Instructions
@@ -578,9 +581,9 @@ module e203_exu_decode(
   assign agu_info_bus[`E203_DECINFO_AGU_AMOMINU] = rv32_amominu_w;
   assign agu_info_bus[`E203_DECINFO_AGU_OP2IMM ] = need_imm; 
 
+// ===========================================================================
 
-
-
+// 判断illegal
   // Reuse the common signals as much as possible to save gatecounts
   wire rv32_all0s_ilgl  = rv32_func7_0000000 
                         & rv32_rs2_x0 
@@ -616,6 +619,8 @@ module e203_exu_decode(
   
   wire rv_all0s1s_ilgl = rv32 ?  (rv32_all0s_ilgl | rv32_all1s_ilgl)
                               :  (rv16_all0s_ilgl | rv16_all1s_ilgl);
+// ===========================================================================
+
 
   //
   // All the RV32IMA need RD register except the
@@ -953,7 +958,6 @@ module e203_exu_decode(
 
   assign dec_imm = rv32 ? rv32_imm : rv16_imm;
   assign dec_pc  = i_pc;
-
   
 
   assign dec_info = 

@@ -33,7 +33,8 @@
 // ====================================================================
 
 `include "e203_defines.v"
-
+  // ===========================================================================
+  //声明cpu_top module
 module e203_cpu_top(
   output [`E203_PC_SIZE-1:0] inspect_pc,
   output inspect_dbg_irq      ,
@@ -241,6 +242,7 @@ module e203_cpu_top(
   input  rst_n
   );
 
+  // ===========================================================================
   `ifdef E203_HAS_ITCM //{
   wire  itcm_ls;
 
@@ -349,6 +351,8 @@ module e203_cpu_top(
     assign fio_icb_enable = 1'b0;
     `endif
 
+  // ===========================================================================
+  //例化cpu
   e203_cpu #(.MASTER(1)) u_e203_cpu(
     .inspect_pc               (inspect_pc), 
     .inspect_dbg_irq          (inspect_dbg_irq      ),
@@ -557,6 +561,8 @@ module e203_cpu_top(
 
   );
 
+  // ===========================================================================
+  //例化srams
   e203_srams u_e203_srams(
   `ifdef E203_HAS_DTCM //{
    .dtcm_ram_sd (tcm_sd),
