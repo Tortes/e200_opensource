@@ -237,7 +237,7 @@ module e203_exu_disp(
                  // If it was a WFI instruction commited halt req, then it will stall the disaptch
                & (~wfi_halt_exu_req)   
                  // No dependency
-               & (~dep)   
+               & (~dep)
                ////  // If dispatch to ALU as long pipeline, then must check
                ////  //   the OITF is ready
                //// & ((disp_alu & disp_o_alu_longpipe) ? disp_oitf_ready : 1'b1);
@@ -248,33 +248,106 @@ module e203_exu_disp(
   assign disp_i_valid_pos = disp_condition & disp_i_valid; 
   assign disp_i_ready     = disp_condition & disp_i_ready_pos; 
 
+  //*****************************************************************************
+  //The register to be used in ALU
+  wire disp_i_rs1_msked_en = 1'b1;
+  wire [`E203_XLEN-1:0] disp_i_rs1_msked_r;
+  wire [`E203_XLEN-1:0] disp_i_rs1_msked_nxt = disp_i_rs1 & {`E203_XLEN{~disp_i_rs1x0}};
+  
+  wire disp_i_rs2_msked_en = 1'b1;
+  wire [`E203_XLEN-1:0] disp_i_rs2_msked_r;
+  wire [`E203_XLEN-1:0] disp_i_rs2_msked_nxt = disp_i_rs2 & {`E203_XLEN{~disp_i_rs2x0}};
 
-  wire [`E203_XLEN-1:0] disp_i_rs1_msked = disp_i_rs1 & {`E203_XLEN{~disp_i_rs1x0}};
-  wire [`E203_XLEN-1:0] disp_i_rs2_msked = disp_i_rs2 & {`E203_XLEN{~disp_i_rs2x0}};
+  wire disp_i_rdwen_en = 1'b1;
+  wire disp_i_rdwen_r;
+  wire disp_i_rdwen_nxt;
+
+  wire disp_i_rdidx_en = 1'b1;
+  wire disp_i_rdidx_r;
+  wire disp_i_rdidx_nxt;
+
+  wire disp_i_info_en = 1'b1;
+  wire disp_i_info_r;
+  wire disp_i_info_nxt;
+
+  wire disp_i_imm_en = 1'b1;
+  wire disp_i_imm_r;
+  wire disp_i_imm_nxt;
+
+  wire disp_i_pc_en = 1'b1;
+  wire disp_i_pc_r;
+  wire disp_i_pc_nxt;
+
+  wire disp_i_misalgn_en = 1'b1;
+  wire disp_i_misalgn_r;
+  wire disp_i_misalgn_nxt;
+
+  wire disp_i_buserr_en = 1'b1;
+  wire disp_i_buserr_r;
+  wire disp_i_buserr_nxt;
+
+  wire disp_i_ilegl_en = 1'b1;
+  wire disp_i_ilegl_r;
+  wire disp_i_ilegl_nxt;
+
+  wire disp_oitf_ptr_en = 1'b1;
+  wire disp_oitf_ptr_r;
+  wire disp_oitf_ptr_nxt;
+  //*****************************************************************************
+  //revise the nxt
+  assign disp_i_rs1_msked_nxt = disp_i_rs1 & {`E203_XLEN{~disp_i_rs1x0}};
+  assign disp_i_rs2_msked_nxt = disp_i_rs2 & {`E203_XLEN{~disp_i_rs2x0}};
+  //DFF
+  sirv_gnrl_dfflr #(`E203_XLEN) disp_i_rs1_msked_dfflr (disp_i_rs1_msked_en, disp_i_rs1_msked_nxt, disp_i_rs1_msked_r, clk, rst_n);
+  sirv_gnrl_dfflr #(`E203_XLEN) disp_i_rs2_msked_dfflr (disp_i_rs2_msked_en, disp_i_rs2_msked_nxt, disp_i_rs2_msked_r, clk, rst_n);
+  
+  assign disp_i_rdwen_nxt = disp_i_rdwen;
+  sirv_gnrl_dfflr #(1) disp_i_rdwen_dfflr (disp_i_rdwen_en, disp_i_rdwen_nxt, disp_i_rdwen_r, clk, rst_n);
+  
+  assign disp_i_rdidx_nxt = disp_i_rdidx;
+  sirv_gnrl_dfflr #(`E203_RFIDX_WIDTH) disp_i_rdidx_dfflr (disp_i_rdidx_en, disp_i_rdidx_nxt, disp_i_rdidx_r, clk, rst_n);
+
+  assign disp_i_info_nxt = disp_i_info;
+  sirv_gnrl_dfflr #(`E203_DECINFO_WIDTH) disp_i_info_dfflr (disp_i_info_en, disp_i_info_nxt, disp_i_info_r, clk, rst_n);
+
     // Since we always dispatch any instructions into ALU, so we dont need to gate ops here
   //assign disp_o_alu_rs1   = {`E203_XLEN{disp_alu}} & disp_i_rs1_msked;
   //assign disp_o_alu_rs2   = {`E203_XLEN{disp_alu}} & disp_i_rs2_msked;
   //assign disp_o_alu_rdwen = disp_alu & disp_i_rdwen;
   //assign disp_o_alu_rdidx = {`E203_RFIDX_WIDTH{disp_alu}} & disp_i_rdidx;
   //assign disp_o_alu_info  = {`E203_DECINFO_WIDTH{disp_alu}} & disp_i_info;  
+
   //派遣操作数rs1, rs2
-  assign disp_o_alu_rs1   = disp_i_rs1_msked;
-  assign disp_o_alu_rs2   = disp_i_rs2_msked;
+  assign disp_o_alu_rs1   = disp_i_rs1_msked_r;
+  assign disp_o_alu_rs2   = disp_i_rs2_msked_r;
   //派遣指令信息
-  assign disp_o_alu_rdwen = disp_i_rdwen; //是否写回结果给寄存器
-  assign disp_o_alu_rdidx = disp_i_rdidx; //写回的寄存器索引
-  assign disp_o_alu_info  = disp_i_info;  
+  assign disp_o_alu_rdwen = disp_i_rdwen_r; //是否写回结果给寄存器
+  assign disp_o_alu_rdidx = disp_i_rdidx_r; //写回的寄存器索引
+  assign disp_o_alu_info  = disp_i_info_r;  
   
     // Why we use precise version of disp_longp here, because
     //   only when it is really dispatched as long pipe then allocate the OITF
   assign disp_oitf_ena = disp_o_alu_valid & disp_o_alu_ready & disp_alu_longp_real;
 
-  assign disp_o_alu_imm  = disp_i_imm;
-  assign disp_o_alu_pc   = disp_i_pc;
-  assign disp_o_alu_itag = disp_oitf_ptr;
-  assign disp_o_alu_misalgn= disp_i_misalgn;
-  assign disp_o_alu_buserr = disp_i_buserr ;
-  assign disp_o_alu_ilegl  = disp_i_ilegl  ;
+  assign disp_i_imm_nxt = disp_i_imm;
+  sirv_gnrl_dfflr #(`E203_XLEN) disp_i_imm_dfflr (disp_i_imm_en, disp_i_imm_nxt, disp_i_imm_r, clk, rst_n);
+  assign disp_i_pc_nxt = disp_i_pc;
+  sirv_gnrl_dfflr #(`E203_PC_SIZE) disp_i_pc_dfflr (disp_i_pc_en, disp_i_pc_nxt, disp_i_pc_r, clk, rst_n);
+  assign disp_i_misalgn_nxt = disp_i_misalgn;
+  sirv_gnrl_dfflr #(1) disp_i_misalgn_dfflr (disp_i_misalgn_en, disp_i_misalgn_nxt, disp_i_misalgn_r, clk, rst_n);
+  assign disp_i_buserr_nxt = disp_i_buserr;
+  sirv_gnrl_dfflr #(1) disp_i_buserr_dfflr (disp_i_buserr_en, disp_i_buserr_nxt, disp_i_buserr_r, clk, rst_n);
+  assign disp_i_ilegl_nxt = disp_i_ilegl;
+  sirv_gnrl_dfflr #(1) disp_i_ilegl_dfflr (disp_i_ilegl_en, disp_i_ilegl_nxt, disp_i_ilegl_r, clk, rst_n);
+  assign disp_oitf_ptr_nxt = disp_oitf_ptr;
+  sirv_gnrl_dfflr #(1) disp_oitf_ptr_dfflr (disp_oitf_ptr_en, disp_oitf_ptr_nxt, disp_oitf_ptr_r, clk, rst_n);
+  
+  assign disp_o_alu_imm  = disp_i_imm_r;
+  assign disp_o_alu_pc   = disp_i_pc_r;
+  assign disp_o_alu_itag = disp_oitf_ptr_r;
+  assign disp_o_alu_misalgn= disp_i_misalgn_r;
+  assign disp_o_alu_buserr = disp_i_buserr_r ;
+  assign disp_o_alu_ilegl  = disp_i_ilegl_r  ;
 
 
 // FPU 指令

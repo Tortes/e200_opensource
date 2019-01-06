@@ -16,3 +16,23 @@ ifu_err_nxt <- ifu_rsp_err  (接收PC)
 DFF -> ifu_err_r
 
 *********************exu_disp***************************
+Output:
+//ALU
+- wfi_halt_exu_ack
+- disp_i_ready
+- disp_o_alu_valid
++ disp_o_alu_rs1
++ disp_o_alu_rs2
++ disp_o_alu_rdwen
++ disp_o_alu_rdidx
++ disp_o_alu_info
++ disp_o_alu_imm
++ disp_o_alu_pc
++ disp_o_alu_misalgn
++ disp_o_alu_buserr
++ disp_o_alu_ilegl
++ disp_o_alu_itag
+
+//OITF
+- disp_oitf_ena
+
