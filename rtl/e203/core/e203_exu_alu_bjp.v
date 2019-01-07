@@ -64,8 +64,8 @@ module e203_exu_alu_bjp(
   output bjp_o_cmt_mret,
   output bjp_o_cmt_dret,
   output bjp_o_cmt_fencei,
-  output bjp_o_cmt_prdt,// The predicted ture/false  
-  output bjp_o_cmt_rslv,// The resolved ture/false
+  output bjp_o_cmt_prdt,// The predicted ture/false 返回预测结果
+  output bjp_o_cmt_rslv,// The resolved ture/false  返回真实结果
 
   //////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////

@@ -797,8 +797,8 @@ module e203_exu_alu(
   assign cmt_o_bjp         = o_sel_bjp & bjp_o_cmt_bjp;
   assign cmt_o_mret        = o_sel_bjp & bjp_o_cmt_mret;
   assign cmt_o_dret        = o_sel_bjp & bjp_o_cmt_dret;
-  assign cmt_o_bjp_prdt    = o_sel_bjp & bjp_o_cmt_prdt;
-  assign cmt_o_bjp_rslv    = o_sel_bjp & bjp_o_cmt_rslv;
+  assign cmt_o_bjp_prdt    = o_sel_bjp & bjp_o_cmt_prdt;  //预测
+  assign cmt_o_bjp_rslv    = o_sel_bjp & bjp_o_cmt_rslv;  //真实
   assign cmt_o_fencei      = o_sel_bjp & bjp_o_cmt_fencei;
 
   assign cmt_o_ecall       = o_sel_alu & alu_o_cmt_ecall;

@@ -88,8 +88,8 @@ module e203_exu_decode(
 
 // ====================================================================\
 // Define 
-  wire decode_clk = 1'b0;
-  wire decode_rst_n = 1'b0;
+  // wire decode_clk = 1'b0;
+  // wire decode_rst_n = 1'b0;
 
 
 // 编码段
@@ -1149,26 +1149,26 @@ module e203_exu_decode(
 
   // ====================================================================
   //Define
-  wire dec_rs1x0_ena = 1'b1;
-  wire dec_rs1x0_nxt;
-  wire dec_rs1x0;
-  wire dec_rs1x0_r;
+  // wire dec_rs1x0_ena = 1'b1;
+  // wire dec_rs1x0_nxt;
+  // wire dec_rs1x0;
+  // wire dec_rs1x0_r;
 
-  assign dec_rs1x0_nxt = (dec_rs1idx == `E203_RFIDX_WIDTH'b0);
-  sirv_gnrl_dfflr #(1) dec_rs1x0_dfflr ( dec_rs1x0_ena, dec_rs1x0_nxt, dec_rs1x0_r, decode_clk, decode_rst_n);
-  assign dec_rs1x0 = dec_rs1x0_r;
+  // assign dec_rs1x0_nxt = (dec_rs1idx == `E203_RFIDX_WIDTH'b0);
+  // sirv_gnrl_dfflr #(1) dec_rs1x0_dfflr ( dec_rs1x0_ena, dec_rs1x0_nxt, dec_rs1x0_r, decode_clk, decode_rst_n);
+  // assign dec_rs1x0 = dec_rs1x0_r;
 
-  wire dec_rs2x0_ena = 1'b1;
-  wire dec_rs2x0_nxt;
-  wire dec_rs2x0;
-  wire dec_rs2x0_r;
+  // wire dec_rs2x0_ena = 1'b1;
+  // wire dec_rs2x0_nxt;
+  // wire dec_rs2x0;
+  // wire dec_rs2x0_r;
 
-  assign dec_rs2x0_nxt = (dec_rs2idx == `E203_RFIDX_WIDTH'b0);
-  sirv_gnrl_dfflr #(1) dec_rs2x0_dfflr ( dec_rs2x0_ena, dec_rs2x0_nxt, dec_rs2x0_r, decode_clk, decode_rst_n);
-  assign dec_rs2x0 = dec_rs2x0_r;
+  // assign dec_rs2x0_nxt = (dec_rs2idx == `E203_RFIDX_WIDTH'b0);
+  // sirv_gnrl_dfflr #(1) dec_rs2x0_dfflr ( dec_rs2x0_ena, dec_rs2x0_nxt, dec_rs2x0_r, decode_clk, decode_rst_n);
+  // assign dec_rs2x0 = dec_rs2x0_r;
   // ====================================================================
-  // assign dec_rs1x0 = (dec_rs1idx == `E203_RFIDX_WIDTH'b0);
-  // assign dec_rs2x0 = (dec_rs2idx == `E203_RFIDX_WIDTH'b0);
+  assign dec_rs1x0 = (dec_rs1idx == `E203_RFIDX_WIDTH'b0);
+  assign dec_rs2x0 = (dec_rs2idx == `E203_RFIDX_WIDTH'b0);
                      
   wire rv_index_ilgl;
   `ifdef E203_RFREG_NUM_IS_4 //{ 
