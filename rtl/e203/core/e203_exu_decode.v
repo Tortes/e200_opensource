@@ -80,11 +80,18 @@ module e203_exu_decode(
   output dec_jalr,
   output dec_bxx,
 
+
   output [`E203_RFIDX_WIDTH-1:0] dec_jalr_rs1idx,
-  output [`E203_XLEN-1:0] dec_bjp_imm 
+  output [`E203_XLEN-1:0] dec_bjp_imm
+
   );
-// ====================================================================
-  
+
+// ====================================================================\
+// Define 
+  wire decode_clk = 1'b0;
+  wire decode_rst_n = 1'b0;
+
+
 // 编码段
   wire [32-1:0] rv32_instr = i_instr;
   wire [16-1:0] rv16_instr = i_instr[15:0];
@@ -1140,8 +1147,28 @@ module e203_exu_decode(
   assign dec_rs2en = rv32 ? rv32_need_rs2 : (rv16_rs2en & (~(rv16_rs2idx == `E203_RFIDX_WIDTH'b0)));
   assign dec_rdwen = rv32 ? rv32_need_rd  : (rv16_rden  & (~(rv16_rdidx  == `E203_RFIDX_WIDTH'b0)));
 
-  assign dec_rs1x0 = (dec_rs1idx == `E203_RFIDX_WIDTH'b0);
-  assign dec_rs2x0 = (dec_rs2idx == `E203_RFIDX_WIDTH'b0);
+  // ====================================================================
+  //Define
+  wire dec_rs1x0_ena = 1'b1;
+  wire dec_rs1x0_nxt;
+  wire dec_rs1x0;
+  wire dec_rs1x0_r;
+
+  assign dec_rs1x0_nxt = (dec_rs1idx == `E203_RFIDX_WIDTH'b0);
+  sirv_gnrl_dfflr #(1) dec_rs1x0_dfflr ( dec_rs1x0_ena, dec_rs1x0_nxt, dec_rs1x0_r, decode_clk, decode_rst_n);
+  assign dec_rs1x0 = dec_rs1x0_r;
+
+  wire dec_rs2x0_ena = 1'b1;
+  wire dec_rs2x0_nxt;
+  wire dec_rs2x0;
+  wire dec_rs2x0_r;
+
+  assign dec_rs2x0_nxt = (dec_rs2idx == `E203_RFIDX_WIDTH'b0);
+  sirv_gnrl_dfflr #(1) dec_rs2x0_dfflr ( dec_rs2x0_ena, dec_rs2x0_nxt, dec_rs2x0_r, decode_clk, decode_rst_n);
+  assign dec_rs2x0 = dec_rs2x0_r;
+  // ====================================================================
+  // assign dec_rs1x0 = (dec_rs1idx == `E203_RFIDX_WIDTH'b0);
+  // assign dec_rs2x0 = (dec_rs2idx == `E203_RFIDX_WIDTH'b0);
                      
   wire rv_index_ilgl;
   `ifdef E203_RFREG_NUM_IS_4 //{ 

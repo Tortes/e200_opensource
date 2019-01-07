@@ -279,6 +279,7 @@ module e203_exu(
     .dec_rdidx (dec_rdidx),
     .dec_pc    (dec_pc),
     .dec_imm   (dec_imm)
+
   );
 
   //////////////////////////////////////////////////////////////

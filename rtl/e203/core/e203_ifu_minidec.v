@@ -107,8 +107,11 @@ module e203_ifu_minidec(
   .dec_bxx (dec_bxx ),
 
   .dec_jalr_rs1idx(dec_jalr_rs1idx),
-  .dec_bjp_imm    (dec_bjp_imm    )  
+  .dec_bjp_imm    (dec_bjp_imm    )
+
   );
+
+  
 
 
 endmodule
