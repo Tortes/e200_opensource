@@ -36,11 +36,12 @@
 module e203_exu_oitf (
   output dis_ready,
 
-  input  dis_ena,
-  input  ret_ena,
+  input  dis_ena,   //派遣一个长指令的便能信号，该信号将用于分配一个 OITF 表项
+  input  ret_ena,   //写回一个长指令的使能信号，该信号将用于移除一个 OITF 表项
 
   output [`E203_ITAG_WIDTH-1:0] dis_ptr,
-  output [`E203_ITAG_WIDTH-1:0] ret_ptr,
+  output [`E203_ITAG_WIDTH-1:0] ret_ptr,    // 长指令   ITAG
+                                            // 长指令写回仲裁选择参考
 
   output [`E203_RFIDX_WIDTH-1:0] ret_rdidx,
   output ret_rdwen,

@@ -32,7 +32,7 @@
 // ====================================================================
 
 `include "e203_defines.v"
-
+// ====================================================================
 module e203_exu(
   output commit_mret,
   output commit_trap,
@@ -187,7 +187,7 @@ module e203_exu(
   input  clk,
   input  rst_n
   );
-
+// ====================================================================
 
   //////////////////////////////////////////////////////////////
   // Instantiate the Regfile
@@ -198,7 +198,7 @@ module e203_exu(
   wire [`E203_XLEN-1:0] rf_wbck_wdat;
   wire [`E203_RFIDX_WIDTH-1:0] rf_wbck_rdidx;
 
-
+// ====================================================================
   e203_exu_regfile u_e203_exu_regfile(
     .read_src1_idx (i_rs1idx ),
     .read_src2_idx (i_rs2idx ),

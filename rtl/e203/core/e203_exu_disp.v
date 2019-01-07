@@ -100,7 +100,7 @@ module e203_exu_disp(
   input  oitfrd_match_disprd,   //  派遣指令结果寄存器和 OITF 任一表项中的结果寄存器相同
   input  [`E203_ITAG_WIDTH-1:0] disp_oitf_ptr ,
 
-  output disp_oitf_ena,
+  output disp_oitf_ena,         // 传递给OITF的长指令使能信号
   input  disp_oitf_ready,
 
   //浮点运算
@@ -219,6 +219,7 @@ module e203_exu_disp(
   //WAW
   wire waw_dep = (oitfrd_match_disprd); 
 
+  //判断是否阻塞dispatch
   wire dep = raw_dep | waw_dep;
 
   // The WFI halt exu ack will be asserted when the OITF is empty
@@ -247,36 +248,41 @@ module e203_exu_disp(
 
   assign disp_i_valid_pos = disp_condition & disp_i_valid; 
   assign disp_i_ready     = disp_condition & disp_i_ready_pos; 
-
+  assign disp_i_ena       = disp_i_valid_pos & disp_i_ready;
   //*****************************************************************************
   //The register to be used in ALU
   wire disp_i_rs1_msked_en = 1'b1;
+  //wire disp_i_rs1_msked_en = disp_i_ena ;
   wire [`E203_XLEN-1:0] disp_i_rs1_msked_r;
   wire [`E203_XLEN-1:0] disp_i_rs1_msked_nxt = disp_i_rs1 & {`E203_XLEN{~disp_i_rs1x0}};
   
   wire disp_i_rs2_msked_en = 1'b1;
+  //wire disp_i_rs2_msked_en = disp_i_ena ;
   wire [`E203_XLEN-1:0] disp_i_rs2_msked_r;
   wire [`E203_XLEN-1:0] disp_i_rs2_msked_nxt = disp_i_rs2 & {`E203_XLEN{~disp_i_rs2x0}};
 
   wire disp_i_rdwen_en = 1'b1;
+  // wire disp_i_rdwen_en = disp_i_ena ;
   wire disp_i_rdwen_r;
   wire disp_i_rdwen_nxt;
 
   wire disp_i_rdidx_en = 1'b1;
-  wire disp_i_rdidx_r;
-  wire disp_i_rdidx_nxt;
+  // wire disp_i_rdidx_en = disp_i_ena ;
+  wire [`E203_RFIDX_WIDTH-1:0] disp_i_rdidx_r;
+  wire [`E203_RFIDX_WIDTH-1:0] disp_i_rdidx_nxt;
 
   wire disp_i_info_en = 1'b1;
-  wire disp_i_info_r;
-  wire disp_i_info_nxt;
+  // wire disp_i_info_en = disp_i_ena ;
+  wire [`E203_DECINFO_WIDTH-1:0] disp_i_info_r;
+  wire [`E203_DECINFO_WIDTH-1:0] disp_i_info_nxt;
 
   wire disp_i_imm_en = 1'b1;
-  wire disp_i_imm_r;
-  wire disp_i_imm_nxt;
+  wire [`E203_XLEN-1:0] disp_i_imm_r;
+  wire [`E203_XLEN-1:0] disp_i_imm_nxt;
 
   wire disp_i_pc_en = 1'b1;
-  wire disp_i_pc_r;
-  wire disp_i_pc_nxt;
+  wire [`E203_PC_SIZE-1:0] disp_i_pc_r;
+  wire [`E203_PC_SIZE-1:0] disp_i_pc_nxt;
 
   wire disp_i_misalgn_en = 1'b1;
   wire disp_i_misalgn_r;
@@ -294,9 +300,10 @@ module e203_exu_disp(
   wire disp_oitf_ptr_r;
   wire disp_oitf_ptr_nxt;
   //*****************************************************************************
-  //revise the nxt
-  assign disp_i_rs1_msked_nxt = disp_i_rs1 & {`E203_XLEN{~disp_i_rs1x0}};
-  assign disp_i_rs2_msked_nxt = disp_i_rs2 & {`E203_XLEN{~disp_i_rs2x0}};
+  // wire [`E203_XLEN-1:0] disp_i_rs1_msked = disp_i_rs1 & {`E203_XLEN{~disp_i_rs1x0}};
+  // wire [`E203_XLEN-1:0] disp_i_rs2_msked = disp_i_rs2 & {`E203_XLEN{~disp_i_rs2x0}};
+
+
   //DFF
   sirv_gnrl_dfflr #(`E203_XLEN) disp_i_rs1_msked_dfflr (disp_i_rs1_msked_en, disp_i_rs1_msked_nxt, disp_i_rs1_msked_r, clk, rst_n);
   sirv_gnrl_dfflr #(`E203_XLEN) disp_i_rs2_msked_dfflr (disp_i_rs2_msked_en, disp_i_rs2_msked_nxt, disp_i_rs2_msked_r, clk, rst_n);
@@ -320,10 +327,15 @@ module e203_exu_disp(
   //派遣操作数rs1, rs2
   assign disp_o_alu_rs1   = disp_i_rs1_msked_r;
   assign disp_o_alu_rs2   = disp_i_rs2_msked_r;
+  // assign disp_o_alu_rs1   = disp_i_rs1_msked;
+  // assign disp_o_alu_rs2   = disp_i_rs2_msked;
   //派遣指令信息
   assign disp_o_alu_rdwen = disp_i_rdwen_r; //是否写回结果给寄存器
   assign disp_o_alu_rdidx = disp_i_rdidx_r; //写回的寄存器索引
   assign disp_o_alu_info  = disp_i_info_r;  
+  // assign disp_o_alu_rdwen = disp_i_rdwen;
+  // assign disp_o_alu_rdidx = disp_i_rdidx;
+  // assign disp_o_alu_info  = disp_i_info; 
   
     // Why we use precise version of disp_longp here, because
     //   only when it is really dispatched as long pipe then allocate the OITF
@@ -348,6 +360,12 @@ module e203_exu_disp(
   assign disp_o_alu_misalgn= disp_i_misalgn_r;
   assign disp_o_alu_buserr = disp_i_buserr_r ;
   assign disp_o_alu_ilegl  = disp_i_ilegl_r  ;
+  // assign disp_o_alu_imm  = disp_i_imm;
+  // assign disp_o_alu_pc   = disp_i_pc;
+  // assign disp_o_alu_itag = disp_oitf_ptr;
+  // assign disp_o_alu_misalgn= disp_i_misalgn;
+  // assign disp_o_alu_buserr = disp_i_buserr ;
+  // assign disp_o_alu_ilegl  = disp_i_ilegl  ;
 
 
 // FPU 指令
@@ -383,7 +401,7 @@ module e203_exu_disp(
   assign disp_oitf_rs3idx = disp_i_fpu ? disp_i_fpu_rs3idx : `E203_RFIDX_WIDTH'b0;
   assign disp_oitf_rdidx  = disp_i_fpu ? disp_i_fpu_rdidx  : disp_i_rdidx;
 
-  assign disp_oitf_pc  = disp_i_pc;
+  assign disp_oitf_pc  = disp_i_pc_r;
 
 endmodule                                      
                                                

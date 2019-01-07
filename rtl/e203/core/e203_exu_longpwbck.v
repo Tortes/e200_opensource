@@ -61,6 +61,8 @@ module e203_exu_longpwbck(
   output longp_wbck_o_rdfpu,
   //
   // The Long pipe instruction Exception interface to commit stage
+  //异常处理
+
   output  longp_excp_o_valid,
   input   longp_excp_o_ready,
   output  longp_excp_o_insterr,
@@ -154,8 +156,9 @@ module e203_exu_longpwbck(
        (need_wbck ? longp_wbck_o_ready : 1'b1)
      & (need_excp ? longp_excp_o_ready : 1'b1);
 
-
+  //通过最终写回仲裁的握手
   assign longp_wbck_o_valid = need_wbck & wbck_i_valid & (need_excp ? longp_excp_o_ready : 1'b1);
+  //通过交付握手
   assign longp_excp_o_valid = need_excp & wbck_i_valid & (need_wbck ? longp_wbck_o_ready : 1'b1);
 
   assign longp_wbck_o_wdat  = wbck_i_wdat ;
