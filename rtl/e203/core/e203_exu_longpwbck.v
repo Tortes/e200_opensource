@@ -46,13 +46,14 @@ module e203_exu_longpwbck(
   input  [`E203_XLEN-1:0] lsu_wbck_i_wdat,
   input  [`E203_ITAG_WIDTH -1:0] lsu_wbck_i_itag,
   input  lsu_wbck_i_err , // The error exception generated
-  input  lsu_cmt_i_buserr ,
-  input  [`E203_ADDR_SIZE -1:0] lsu_cmt_i_badaddr,
-  input  lsu_cmt_i_ld, 
-  input  lsu_cmt_i_st, 
+  input  lsu_cmt_i_buserr , // 访存错误异常指示
+  input  [`E203_ADDR_SIZE -1:0] lsu_cmt_i_badaddr,  // 错误地址
+  input  lsu_cmt_i_ld,      // 错误是否为LD
+  input  lsu_cmt_i_st,      // 错误是否为Store
 
   //////////////////////////////////////////////////////////////
   // The Long pipe instruction Wback interface to final wbck module
+  // 写回最终仲裁
   output longp_wbck_o_valid, // Handshake valid
   input  longp_wbck_o_ready, // Handshake ready
   output [`E203_FLEN-1:0] longp_wbck_o_wdat,
@@ -74,7 +75,7 @@ module e203_exu_longpwbck(
   //
   //The itag of toppest entry of OITF
   input  oitf_empty,
-  input  [`E203_ITAG_WIDTH -1:0] oitf_ret_ptr,
+  input  [`E203_ITAG_WIDTH -1:0] oitf_ret_ptr,  
   input  [`E203_RFIDX_WIDTH-1:0] oitf_ret_rdidx,
   input  [`E203_PC_SIZE-1:0] oitf_ret_pc,
   input  oitf_ret_rdwen,   
@@ -88,8 +89,9 @@ module e203_exu_longpwbck(
 
   // The Long-pipe instruction can write-back only when it's itag 
   //   is same as the itag of toppest entry of OITF
-  wire wbck_ready4lsu = (lsu_wbck_i_itag == oitf_ret_ptr) & (~oitf_empty);
-  wire wbck_sel_lsu = lsu_wbck_i_valid & wbck_ready4lsu;
+  // 只有队列顶端的长指令可以写回
+  wire wbck_ready4lsu = (lsu_wbck_i_itag == oitf_ret_ptr) & (~oitf_empty);  // 是否顶部
+  wire wbck_sel_lsu = lsu_wbck_i_valid & wbck_ready4lsu;                    // 是否可以写回
 
   //assign longp_excp_o_ld   = wbck_sel_lsu & lsu_cmt_i_ld;
   //assign longp_excp_o_st   = wbck_sel_lsu & lsu_cmt_i_st;
@@ -126,11 +128,11 @@ module e203_exu_longpwbck(
 
   assign lsu_wbck_i_ready = wbck_ready4lsu & wbck_i_ready;
 
-  assign wbck_i_valid = ({1{wbck_sel_lsu}} & lsu_wbck_i_valid) 
+  assign wbck_i_valid = ({1{wbck_sel_lsu}} & lsu_wbck_i_valid) // 是否可以写回 且 LSU是否握手申请
                          ;
   `ifdef E203_FLEN_IS_32 //{
-  wire [`E203_FLEN-1:0] lsu_wbck_i_wdat_exd = lsu_wbck_i_wdat;
-  `else//}{
+  wire [`E203_FLEN-1:0] lsu_wbck_i_wdat_exd = lsu_wbck_i_wdat;  // 写回32位值
+  `else//}{                                                     // 写回补全的16位值
   wire [`E203_FLEN-1:0] lsu_wbck_i_wdat_exd = {{`E203_FLEN-`E203_XLEN{1'b0}},lsu_wbck_i_wdat};
   `endif//}
   assign wbck_i_wdat  = ({`E203_FLEN{wbck_sel_lsu}} & lsu_wbck_i_wdat_exd ) 
